@@ -1,0 +1,99 @@
+#
+# windriver parallel computing platform.
+#
+
+withdpdk = no
+
+ifeq ($(withdpdk),no)
+        DPDK_FLAG=-I/opt/dpdk-L.1.1.0_27/include
+else
+        DPDK_FLAG=-D_WITH_DPDK -I/opt/dpdk-L.1.1.0_27/include 
+endif
+
+LDFLAGS = -melf_x86_64 -pthread  -m64 \
+                  -L/opt/dpdk-L.1.1.0_27/lib \
+                  -static_mpi -Wl,-Map=rtcore.map,--cref \
+                  -Wl,-L/opt/dpdk-L.1.1.0_27/lib \
+                  -Wl,-lethdev -Wl,-lkawela \
+                  -Wl,-lrte_82599_pmd \
+                  -Wl,-lrte_mbuf \
+                  -Wl,-lrte_cmdline \
+                  -Wl,-lrte_timer \
+                  -Wl,-lrte_malloc \
+                  -Wl,--start-group \
+                  -Wl,-lrte_mempool \
+                  -Wl,-lrte_ring \
+                  -Wl,-lrte_hash \
+                  -lm -ldl -lstdc++\
+                  -Wl,-lrte_lpm \
+                  -Wl,-lrte_eal \
+                  -Wl,--end-group
+MUQLIBPATH = -I/opt/intel/mkl/include \
+					   -L/opt/intel/mkl/lib/intel64 \
+					   -L/opt/intel/lib/intel64           
+
+MPIFORT = mpiifort
+MPICC = mpiicc
+#FPGA_run without MuQ_DEB
+#CFLAG = -D_PARALLEL -D_MPIFIFO -D_REALTIME -D_DIDITF -D_LINUX -D_MuQ -D_MuQ_FPGA_RT -D_Big_endian -D_MuQ_PHY $(DPDK_FLAG) -O0 -fpp -fPIC -fpconstant -assume byterecl -align rec4 -module $(OPATH) -I../include -c -D_windriver -DERT=1
+#CCFLAG = -D_PARALLEL -D_MPIFIFO -D_REALTIME -D_LINUX -D_DIDITF -D_MuQ -D_MuQ_FPGA_RT -D_Big_endian -D_MuQ_PHY $(DPDK_FLAG) -O0 -fPIC -c -I$(SPATH)/UDModel -I$(SPATH)/sim_data_conv -D_windriver -DERT=1
+#FPGA_run with MuQ_DEB
+#CFLAG = -D_PARALLEL -D_MPIFIFO -D_REALTIME -D_DIDITF -D_LINUX -D_MuQ -D_MuQ_DEB -D_MuQ_FPGA_RT -D_Big_endian -D_MuQ_PHY $(DPDK_FLAG) -O0 -fpp -fPIC -fpconstant -assume byterecl -align rec4 -module $(OPATH) -I../include -c -D_windriver -DERT=1
+#CCFLAG = -D_PARALLEL -D_MPIFIFO -D_REALTIME -D_LINUX -D_DIDITF -D_MuQ -D_MuQ_DEB -D_MuQ_FPGA_RT -D_Big_endian -D_MuQ_PHY $(DPDK_FLAG) -O0 -fPIC -c -I$(SPATH)/UDModel -I$(SPATH)/sim_data_conv -D_windriver -DERT=1
+#FPGA_run with MuQ_DEB and MuQ_Rcd
+#CFLAG = -D_PARALLEL -D_MPIFIFO -D_REALTIME -D_DIDITF -D_LINUX -D_MuQ -D_MuQ_DEB -D_MuQ_FPGA_RT -D_Big_endian -D_MuQ_PHY -D_MuQ_Rcd $(DPDK_FLAG) -O0 -fpp -fPIC -fpconstant -assume byterecl -align rec4 -module $(OPATH) -I../include -c -D_windriver -DERT=1
+#CCFLAG = -D_PARALLEL -D_MPIFIFO -D_REALTIME -D_LINUX -D_DIDITF -D_MuQ -D_MuQ_DEB -D_MuQ_FPGA_RT -D_Big_endian -D_MuQ_PHY -D_MuQ_Rcd $(DPDK_FLAG) -O0 -fPIC -c -I$(SPATH)/UDModel -I$(SPATH)/sim_data_conv -D_windriver -DERT=1
+#Linux software environment simulation
+#CFLAG = -D_PARALLEL -D_MPIFIFO -D_LINUX -D_MuQ -D_MuQ_DEB -D_Headtest -D_Big_endian -D_MuQ_PHY -D_C_DEBUG $(DPDK_FLAG) -O0 -fpp -fPIC -fpconstant -nofpscomp -assume byterecl -align rec4 -module $(OPATH) -I../include -c -D_windriver -DERT=1
+#CCFLAG = -D_PARALLEL -D_MPIFIFO -D_LINUX -D_MuQ -D_MuQ_DEB  -D_Headtest -D_Big_endian -D_MuQ_PHY -D_C_DEBUG $(DPDK_FLAG) -O0 -fPIC -c -I$(SPATH)/UDModel -I$(SPATH)/sim_data_conv -D_windriver -DERT=1
+#Linux software environment simulation with MuQ_Rcd
+#CFLAG = -D_PARALLEL -D_MPIFIFO -D_LINUX -D_MuQ -D_MuQ_DEB -D_Headtest -D_Big_endian -D_C_DEBUG -D_MuQ_Rcd $(DPDK_FLAG) -O0 -fpp -fPIC -fpconstant -nofpscomp -assume byterecl -align rec4 -module $(OPATH) -I../include -c -D_windriver -DERT=1
+#CCFLAG = -D_PARALLEL -D_MPIFIFO -D_LINUX -D_MuQ -D_MuQ_DEB  -D_Headtest -D_Big_endian -D_C_DEBUG -D_MuQ_Rcd $(DPDK_FLAG) -O0 -fPIC -c -I$(SPATH)/UDModel -I$(SPATH)/sim_data_conv -D_windriver -DERT=1
+#Linux software generate Modelsim datafile
+CFLAG = -D_PARALLEL -D_MPIFIFO -D_LINUX -D_MuQ -D_MuQ_DEB -D_Headtest -D_Big_endian -D_MuQ_PHY $(DPDK_FLAG) -O0 -fpp -fPIC -fpconstant -nofpscomp -assume byterecl -align rec4 -module $(OPATH) -I../include -c -D_windriver -DERT=1
+CCFLAG = -D_PARALLEL -D_MPIFIFO -D_LINUX -D_MuQ -D_MuQ_DEB  -D_Headtest -D_Big_endian -D_MuQ_PHY $(DPDK_FLAG) -O0 -fPIC -c -I$(SPATH)/UDModel -I$(SPATH)/sim_data_conv -D_windriver -DERT=1
+
+THREAD_SAFE=-parallel
+
+#WITH_DEBUG=-debug
+
+WRAPILIB=-lwrapi \
+				 -lrte_fiber
+MUQLIB = -lmkl_intel_lp64 \
+				 -lmkl_intel_thread \
+				 -liomp5 \
+				 -lmkl_core
+
+ifndef Objects
+	Objects := $(M90objects1) $(M77objects1) $(M90objects2) $(M77objects2) $(F90objects) $(F77objects) $(Cobjects) $(CPobjects) $(WRAPILIB) 
+endif
+
+$(Target): $(Objects) 
+	${MPIFORT} -o $(OPATH)/$@ $^ $(WITH_DEBUG) -fPIC -static_mpi $(THREAD_SAFE) $(MUQLIBPATH) $(MUQLIB) $(LDFLAGS) 
+	cp $(OPATH)/$@ /export/run/$(Target)
+
+$(M77objects1):$(OPATH)/%.o:$(SPATH)/%.FOR
+	${MPIFORT} $(CFLAG) $< -o $@
+	
+$(M77objects2):$(OPATH)/%.o:$(SPATH)/%.FOR
+	${MPIFORT} $(CFLAG) $< -o $@
+
+$(M90objects1):$(OPATH)/%.o:$(SPATH)/%.f90
+	${MPIFORT} $(CFLAG) $< -o $@
+$(M90objects2):$(OPATH)/%.o:$(SPATH)/%.f90
+	${MPIFORT} $(CFLAG) $< -o $@
+
+$(F77objects):$(OPATH)/%.o:$(SPATH)/%.FOR
+	${MPIFORT} $(CFLAG) $< -o $@
+
+$(F90objects):$(OPATH)/%.o:$(SPATH)/%.f90
+	${MPIFORT} $(CFLAG) $< -o $@
+
+$(Cobjects):$(OPATH)/%.o:$(SPATH)/%.c
+	${MPICC} $(CCFLAG) $< -o $@
+
+$(CPobjects):$(OPATH)/%.o:$(SPATH)/%.cpp
+	${MPICC} $(CCFLAG) $< -o $@
+
+clean:
+	rm -f $(Objects) $(Target)

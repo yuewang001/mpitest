@@ -1,0 +1,39 @@
+LDFLAGS = -melf_x86_64 -pthread  -m64 \
+                  -static_mpi -Wl,-Map=rtcore.map,--cref \
+                  -lm -ldl -lstdc++
+MPIFORT = mpiifort
+MPICC = mpiicc
+CFLAG = -DADPSS_PID_B1 -DSPTY -O2 -fpp -fPIC -fpconstant -assume byterecl -align rec4 -module $(OPATH) -I$(SPATH)/include -c
+CCFLAG = -D_LINUX -Wall -O2 -I$(SPATH)/UDModel -c
+
+ifndef Objects
+	Objects := $(F90objects) $(M90objects) $(M77objects) $(F77objects) $(Cobjects) $(CPobjects)
+endif
+
+ifndef BPAdln
+  BPAdln := $(SPATH)lib/libHVDC_C_SXL_LTP_LIB.a
+endif
+
+$(Target): $(Objects) 
+	${MPIFORT}  $(Objects) $(LDFLAGS) $(BPAdln) -o $@
+	cp $@ /export/run/$(Target)
+
+$(M77objects):$(OPATH)/%.o:$(SPATH)/%.for
+	${MPIFORT} $(CFLAG) $< -o $@
+
+$(M90objects):$(OPATH)/%.o:$(SPATH)/%.f90
+	${MPIFORT} $(CFLAG) $< -o $@
+
+$(F77objects):$(OPATH)/%.o:$(SPATH)/%.for
+	${MPIFORT} $(CFLAG) $< -o $@
+
+$(F90objects):$(OPATH)/%.o:$(SPATH)/%.f90
+	${MPIFORT} $(CFLAG) $< -o $@
+
+$(Cobjects):$(OPATH)/%.o:$(SPATH)/%.c
+	${MPICC} $(CCFLAG) $< -o $@
+
+$(CPobjects):$(OPATH)/%.o:$(SPATH)/%.cpp
+	${MPICC} $(CCFLAG) $< -o $@
+clean:
+	rm -f $(Objects) $(Target)

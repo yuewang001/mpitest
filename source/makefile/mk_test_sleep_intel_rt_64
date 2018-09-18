@@ -1,0 +1,12 @@
+OPATH= ..
+SPATH= ..
+Target= test_sleep.exe
+
+#CPobjects = $(OPATH)/test_sleep.o \
+
+Cobjects = $(OPATH)/test_sleep.o \
+	$(OPATH)/pub.o \
+
+rcs= 
+
+include Mcifrtib70io64

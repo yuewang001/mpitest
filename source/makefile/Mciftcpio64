@@ -1,0 +1,96 @@
+LDFLAGS = -melf_x86_64 -m64 \
+                  -lm -ldl -lstdc++
+#MUQLIBPATH = -I/opt/intel/mkl/include \
+#					   -L/opt/intel/mkl/lib/intel64 \
+#					   -L/opt/intel/lib/intel64           
+
+
+
+MUQLIB = -lmkl_intel_lp64 \
+				 -lmkl_intel_thread \
+				 -liomp5 \
+				 -lmkl_core
+
+ifndef icc
+	icc = mpiicc
+#	icc = /opt/intel/impi/2017.1.132/intel64/bin/mpiicc
+#	icc = /opt/intel/composer_xe_2013_sp1.2.144/bin/intel64/icc
+#	icc = gcc
+endif
+
+ifndef cflag
+#	cflag= -D_LINUX -c -O2 -std=c99 -I../include -align -module $(OPATH)
+#FPGA
+	cflag= -Wall -O2 -g -D_LINUX -D_NewFileFormat -D_PARALLEL -D_MuQ -D_MPIFIFO -D_MuQ_DEB -D_Big_endian -D_MuQ_MMC_Test -D_MuQ_NewInterface -D_BackwardEuler -D_NANCHECK -D_LARGE_R_PARALLEL -D_EMTGROUP -D_MuQ_UDPAL -D_MMCNewFileFormat -TP -c -I$(SPATH)/UDModel -I../include -DERT=1 $(OPATH)
+endif
+
+ifndef Ccflag
+#	Ccflag= -D_LINUX -Wall -O2 -TP -c -I$(SPATH)/UDModel -I../include
+#FPGA
+	Ccflag= -Wall -O2 -g -D_LINUX -D_NewFileFormat -D_PARALLEL -D_MuQ -D_MPIFIFO -D_MuQ_DEB -D_Big_endian -D_MuQ_MMC_Test -D_MuQ_NewInterface -D_BackwardEuler -D_NANCHECK -D_LARGE_R_PARALLEL -D_EMTGROUP -D_MuQ_UDPAL -D_MMCNewFileFormat -TP -c -I$(SPATH)/UDModel -I../include -I$(SPATH)/MPIFifo -DERT=1 $(OPATH)
+endif
+
+ifndef C99flag
+#	C99flag= -D_LINUX -Wall -O2 -TP -c -I$(SPATH)/UDModel -I../include
+#FPGA
+	C99flag= -Wall -std=c99 -O2 -g -D_LINUX -D_NewFileFormat -D_PARALLEL -D_MuQ -D_MPIFIFO -D_MuQ_DEB -D_Big_endian -D_MuQ_MMC_Test -D_MuQ_NewInterface -D_BackwardEuler -D_NANCHECK -D_LARGE_R_PARALLEL -D_EMTGROUP -D_MuQ_UDPAL -D_MMCNewFileFormat -TP -c -I$(SPATH)/UDModel -I../include -DERT=1 $(OPATH)
+endif
+
+ifndef lflag
+	lflag= -align -O2 -lstdc++
+endif
+
+
+THREAD_SAFE=-parallel
+
+#WITH_DEBUG=-debug
+
+#WRAPILIB=-lwrapi
+
+#MUQLIB = -lmkl_intel_lp64 \
+#				 -lmkl_intel_thread \
+#				 -liomp5 \
+#				 -lmkl_core
+
+ifndef Objects
+	Objects := $(Cobjects) $(C99objects) $(CPobjects) $(WRAPILIB)
+endif
+
+$(Target): $(Objects) 
+	${icc} $(Objects) $(WITH_DEBUG) -fPIC -static_mpi $(lflag) $(THREAD_SAFE) $(MUQLIBPATH) $(MUQLIB) $(LDFLAGS) -o $(OPATH)/$(Target)
+	cp $(OPATH)/$(Target) /export/run/$(Target)
+
+$(Cobjects):$(OPATH)/%.o:$(SPATH)/%.c
+	${icc} $(cflag) -fPIC $< -o $@
+	
+$(C99objects):$(OPATH)/%.o:$(SPATH)/%.c
+	${icc} $(C99flag) -fPIC $< -o $@
+
+$(CPobjects):$(OPATH)/%.o:$(SPATH)/%.cpp
+	${icc} $(Ccflag) -fPIC $< -o $@
+
+ca:
+	rm -f $(Objects) $(Target)
+
+cf77:
+	rm -f $(F77objects)
+
+cf90:
+	rm -f $(F90objects)
+
+cm77:
+	rm -f $(M77objects)
+
+cm90:
+	rm -f $(M90objects)
+
+ce:
+	rm -f $(Target)
+
+cc:
+	rm -f $(Cobjects)
+
+cr:
+	rm -f $(rcs)
+
+r : ce $(Target)
